@@ -1,18 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HeartCalligraphy</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- Canvas where glowing hearts are drawn -->
   <canvas id="canvas"></canvas>
 
-  <!-- Hidden container for the SVG -->
-  <div id="svg-container" style="display:none;"></div>
+  <svg
+    id="svg"
+    viewBox="0 0 1200 300"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <!-- Temporary test path -->
+    <path
+      id="textPath"
+      d="M100 150 C300 20 500 280 700 150"
+      fill="none"
+      stroke="white"
+      stroke-width="4"
+    />
+  </svg>
 
   <script src="script.js"></script>
 
