@@ -1,20 +1,12 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg"
-     viewBox="0 0 1600 400">
-
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
-
-    text {
-      font-family: 'Great Vibes', cursive;
-      font-size: 170px;
-      fill: none;
-      stroke: white;
-      stroke-width: 3;
-      stroke-linejoin: round;
-    }
-  </style>
-
-  <text x="60" y="250">I'm sorry Didi</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 400">
+  <text
+    x="60"
+    y="250"
+    font-size="170"
+    font-family="cursive"
+    fill="none"
+    stroke="white"
+    stroke-width="3">
+    I'm sorry Didi
+  </text>
 </svg>
-
