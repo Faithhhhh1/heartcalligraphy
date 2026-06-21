@@ -5,7 +5,6 @@ function resize() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 }
-
 resize();
 window.addEventListener("resize", resize);
 
@@ -13,84 +12,53 @@ async function start() {
   const response = await fetch("./assets/text.svg");
   const svgText = await response.text();
 
-  const container = document.getElementById("svg-container");
-  container.innerHTML = svgText;
+  const parser = new DOMParser();
+  const svg = parser.parseFromString(svgText, "image/svg+xml");
 
-  const paths = [...container.querySelectorAll("path")];
+  document.body.appendChild(svg.documentElement);
 
-  if (!paths.length) {
-    throw new Error("No paths found");
+  const text = svg.querySelector("text");
+
+  if (!text) {
+    console.error("No text found.");
+    return;
   }
 
-  // Find bounds of all paths
-  let minX = Infinity;
-  let minY = Infinity;
-  let maxX = -Infinity;
-  let maxY = -Infinity;
+  const length = text.getComputedTextLength();
 
-  paths.forEach((path) => {
-    const box = path.getBBox();
+  const particles = [];
 
-    minX = Math.min(minX, box.x);
-    minY = Math.min(minY, box.y);
-    maxX = Math.max(maxX, box.x + box.width);
-    maxY = Math.max(maxY, box.y + box.height);
-  });
+  for (let i = 0; i < 800; i++) {
+    particles.push({
+      offset: Math.random() * length,
+      speed: 1 + Math.random(),
+      size: 2 + Math.random() * 2
+    });
+  }
 
-  const svgWidth = maxX - minX;
-  const svgHeight = maxY - minY;
-
-  const scale = Math.min(
-    canvas.width / svgWidth,
-    canvas.height / svgHeight
-  ) * 0.8;
-
-  const offsetX =
-    (canvas.width - svgWidth * scale) / 2;
-
-  const offsetY =
-    (canvas.height - svgHeight * scale) / 2;
-
-  const hearts = [];
-
-  paths.forEach((path) => {
-    const length = path.getTotalLength();
-
-    for (let i = 0; i < 120; i++) {
-      hearts.push({
-        path,
-        length,
-        offset: Math.random() * length,
-        speed: 0.5 + Math.random(),
-        size: 2 + Math.random() * 2
-      });
-    }
-  });
-
-  function drawHeart(x, y, size) {
+  function drawHeart(x, y, s) {
     ctx.save();
     ctx.translate(x, y);
 
     ctx.beginPath();
-
-    ctx.moveTo(0, size);
+    ctx.moveTo(0, s);
 
     ctx.bezierCurveTo(
-      size,
-      -size,
-      size * 2,
-      size / 2,
+      s,
+      -s,
+      s * 2,
+      s / 2,
       0,
-      size * 2
+      s * 2
     );
 
     ctx.bezierCurveTo(
-      -size * 2,
-      size / 2,
-      -size,
-      -size,
+      -s * 2,
+      s / 2,
+      -s,
+      -s,
       0,
-      size
+      s
     );
 
     ctx.fillStyle = "#ffd700";
@@ -102,28 +70,27 @@ async function start() {
   }
 
   function animate() {
-    ctx.fillStyle = "rgba(0,0,0,0.15)";
+    ctx.fillStyle = "rgba(0,0,0,0.12)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    hearts.forEach((heart) => {
-      heart.offset += heart.speed;
+    particles.forEach(p => {
+      p.offset += p.speed;
 
-      if (heart.offset > heart.length) {
-        heart.offset = 0;
+      if (p.offset > length) {
+        p.offset = 0;
       }
 
-      const p =
-        heart.path.getPointAtLength(
-          heart.offset
-        );
+      const ratio = p.offset / length;
 
       const x =
-        (p.x - minX) * scale + offsetX;
+        canvas.width * 0.15 +
+        ratio * canvas.width * 0.55;
 
       const y =
-        (p.y - minY) * scale + offsetY;
+        canvas.height / 2 +
+        Math.sin(ratio * Math.PI * 4) * 20;
 
-      drawHeart(x, y, heart.size);
+      drawHeart(x, y, p.size);
     });
 
     requestAnimationFrame(animate);
@@ -132,4 +99,4 @@ async function start() {
   animate();
 }
 
-start().catch(console.error);
+start();
