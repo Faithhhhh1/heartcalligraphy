@@ -10,119 +10,126 @@ resize();
 window.addEventListener("resize", resize);
 
 async function start() {
-  try {
-    const response = await fetch("./assets/text.svg");
+  const response = await fetch("./assets/text.svg");
+  const svgText = await response.text();
 
-    if (!response.ok) {
-      throw new Error("Cannot load text.svg");
+  const container = document.getElementById("svg-container");
+  container.innerHTML = svgText;
+
+  const paths = [...container.querySelectorAll("path")];
+
+  if (!paths.length) {
+    throw new Error("No paths found");
+  }
+
+  // Find bounds of all paths
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+
+  paths.forEach((path) => {
+    const box = path.getBBox();
+
+    minX = Math.min(minX, box.x);
+    minY = Math.min(minY, box.y);
+    maxX = Math.max(maxX, box.x + box.width);
+    maxY = Math.max(maxY, box.y + box.height);
+  });
+
+  const svgWidth = maxX - minX;
+  const svgHeight = maxY - minY;
+
+  const scale = Math.min(
+    canvas.width / svgWidth,
+    canvas.height / svgHeight
+  ) * 0.8;
+
+  const offsetX =
+    (canvas.width - svgWidth * scale) / 2;
+
+  const offsetY =
+    (canvas.height - svgHeight * scale) / 2;
+
+  const hearts = [];
+
+  paths.forEach((path) => {
+    const length = path.getTotalLength();
+
+    for (let i = 0; i < 120; i++) {
+      hearts.push({
+        path,
+        length,
+        offset: Math.random() * length,
+        speed: 0.5 + Math.random(),
+        size: 2 + Math.random() * 2
+      });
     }
+  });
 
-    const svgText = await response.text();
+  function drawHeart(x, y, size) {
+    ctx.save();
+    ctx.translate(x, y);
 
-    const container = document.getElementById("svg-container");
-    container.innerHTML = svgText;
+    ctx.beginPath();
 
-    const paths = [
-      ...container.querySelectorAll("path")
-    ];
+    ctx.moveTo(0, size);
 
-    if (!paths.length) {
-      throw new Error("No paths found in text.svg");
-    }
+    ctx.bezierCurveTo(
+      size,
+      -size,
+      size * 2,
+      size / 2,
+      0,
+      size * 2
+    );
 
-    const hearts = [];
+    ctx.bezierCurveTo(
+      -size * 2,
+      size / 2,
+      -size,
+      -size,
+      0,
+      size
+    );
 
-    paths.forEach((path) => {
-      const length = path.getTotalLength();
+    ctx.fillStyle = "#ffd700";
+    ctx.shadowColor = "#ffeb3b";
+    ctx.shadowBlur = 20;
+    ctx.fill();
 
-      for (let i = 0; i < 150; i++) {
-        hearts.push({
-          path,
-          length,
-          offset: Math.random() * length,
-          speed: 0.5 + Math.random(),
-          size: 2 + Math.random() * 2
-        });
+    ctx.restore();
+  }
+
+  function animate() {
+    ctx.fillStyle = "rgba(0,0,0,0.15)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    hearts.forEach((heart) => {
+      heart.offset += heart.speed;
+
+      if (heart.offset > heart.length) {
+        heart.offset = 0;
       }
+
+      const p =
+        heart.path.getPointAtLength(
+          heart.offset
+        );
+
+      const x =
+        (p.x - minX) * scale + offsetX;
+
+      const y =
+        (p.y - minY) * scale + offsetY;
+
+      drawHeart(x, y, heart.size);
     });
 
-    function drawHeart(x, y, size) {
-      ctx.save();
-      ctx.translate(x, y);
-
-      ctx.beginPath();
-
-      ctx.moveTo(0, size);
-
-      ctx.bezierCurveTo(
-        size,
-        -size,
-        size * 2,
-        size / 2,
-        0,
-        size * 2
-      );
-
-      ctx.bezierCurveTo(
-        -size * 2,
-        size / 2,
-        -size,
-        -size,
-        0,
-        size
-      );
-
-      ctx.fillStyle = "#ffd700";
-      ctx.shadowColor = "#ffeb3b";
-      ctx.shadowBlur = 20;
-      ctx.fill();
-
-      ctx.restore();
-    }
-
-    function animate() {
-      ctx.fillStyle = "rgba(0,0,0,0.15)";
-      ctx.fillRect(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-      );
-
-      hearts.forEach((heart) => {
-        heart.offset += heart.speed;
-
-        if (heart.offset > heart.length) {
-          heart.offset = 0;
-        }
-
-        const p =
-          heart.path.getPointAtLength(
-            heart.offset
-          );
-
-        drawHeart(
-          p.x,
-          p.y,
-          heart.size
-        );
-      });
-
-      requestAnimationFrame(animate);
-    }
-
-    animate();
-  } catch (err) {
-    console.error(err);
-
-    ctx.fillStyle = "white";
-    ctx.font = "20px sans-serif";
-    ctx.fillText(
-      err.message,
-      40,
-      60
-    );
+    requestAnimationFrame(animate);
   }
+
+  animate();
 }
 
-start();
+start().catch(console.error);
