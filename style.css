@@ -10,29 +10,22 @@ body {
   height: 100%;
   overflow: hidden;
   background: #000;
-  font-family: sans-serif;
 }
 
-/* Fullscreen canvas */
-#canvas {
-  position: fixed;
-  inset: 0;
+#ui {
+  position: relative;
   width: 100%;
   height: 100%;
-  display: block;
+  overflow: hidden;
 }
 
-/* SVG only provides the path coordinates */
-#svg {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+.love {
+  position: absolute;
+  color: #ea80b0;
+  font-size: 18px;
+  font-family: Arial, sans-serif;
+  text-shadow: 0 0 10px #fff;
+  white-space: nowrap;
   pointer-events: none;
-}
-
-/* Hide the guide path */
-#textPath {
-  fill: none;
-  stroke: transparent;
+  transform: translate(-50%, -50%) rotate(-30deg);
 }
